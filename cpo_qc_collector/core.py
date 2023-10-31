@@ -7,12 +7,20 @@ import os
 import re
 import shutil
 
+from pathlib import Path
 from typing import Iterator, Optional
 
 import cpo_qc_collector.parsers as parsers
 
+
 def create_output_dirs(config):
     """
+    Create output directories if they don't exist.
+
+    :param config: Application config.
+    :type config: dict[str, object]
+    :return: None
+    :rtype: None
     """
     base_outdir = config['output_dir']
     output_dirs = [
@@ -25,14 +33,20 @@ def create_output_dirs(config):
             os.makedirs(output_dir)    
 
 
-def find_latest_plasmid_screen_output(analysis_dir):
+def find_latest_plasmid_screen_output(analysis_dir: Path):
     """
+    Find the latest plasmid screen output directory, within the analysis directory.
+
+    :param analysis_dir: Analysis directory.
+    :type analysis_dir: str
+    :return: Path to latest plasmid screen output directory.
+    :rtype: Path
     """
     plasmid_screen_output_dir_glob = "plasmid-screen-v*-output"
     plasmid_screen_output_dirs = glob.glob(os.path.join(analysis_dir, 'short', plasmid_screen_output_dir_glob))
     latest_plasmid_screen_output_dir = None
     if len(plasmid_screen_output_dirs) > 0:
-        latest_plasmid_screen_output_dir = os.path.abspath(plasmid_screen_output_dirs[-1])
+        latest_plasmid_screen_output_dir = Path(os.path.abspath(plasmid_screen_output_dirs[-1]))
 
     return latest_plasmid_screen_output_dir
 
