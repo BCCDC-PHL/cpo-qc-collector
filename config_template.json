@@ -1,0 +1,7 @@
+{
+    "analysis_by_run_dir": "/path/to/analysis_by_run",
+    "excluded_runs_list": "/path/to/excluded_runs.csv",
+    "known_species_list": "/path/to/known_species.csv",
+    "scan_interval_seconds": 3600,
+    "output_dir": "/path/to/output/data"
+}
