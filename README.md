@@ -15,7 +15,7 @@ See the Configuration section of this document for details on preparing a config
 More detailed logs can be produced by controlling the log level using the `--log-level` flag:
 
 ```bash
-covid-qc-collector --config config.json --log-level debug
+cpo-qc-collector --config config.json --log-level debug
 ```
 
 # Configuration
