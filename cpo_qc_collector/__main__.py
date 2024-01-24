@@ -37,14 +37,12 @@ def main():
     quit_when_safe = False
 
     while(True):
+        if quit_when_safe:
+            exit(0)
         try:
             if args.config:
                 try:
                     config = cpo_qc_collector.config.load_config(args.config)
-                    # Un-comment below to debug config parsing
-                    # config['excluded_runs'] = list(config['excluded_runs'])
-                    # print(json.dumps(config, indent=2))
-                    # exit()
                     logging.info(json.dumps({"event_type": "config_loaded", "config_file": os.path.abspath(args.config)}))
                 except json.decoder.JSONDecodeError as e:
                     # If we fail to load the config file, we continue on with the
@@ -56,9 +54,11 @@ def main():
             scan_start_timestamp = datetime.datetime.now()
 
             runs = core.find_runs(config)
-            runs_output_file = os.path.join(config['output_dir'], 'illumina_runs.json')
+            runs_output_file = os.path.join(config['output_dir'], 'sequencing_runs.json')
             with open(runs_output_file, 'w') as f:
                 json.dump(runs, f, indent=2)
+                f.write('\n')
+
             logging.info(json.dumps({"event_type": "write_runs_file_complete", "runs_file": runs_output_file}))
 
             for run in core.scan(config):
@@ -68,6 +68,7 @@ def main():
                         logging.info(json.dumps({"event_type": "config_loaded", "config_file": os.path.abspath(args.config)}))
                     except json.decoder.JSONDecodeError as e:
                         logging.error(json.dumps({"event_type": "load_config_failed", "config_file": os.path.abspath(args.config)}))
+                    # if run['analysis_type'] == 'hybrid':
                     core.collect_outputs(config, run)
                 if quit_when_safe:
                     exit(0)

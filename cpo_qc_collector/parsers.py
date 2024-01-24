@@ -2,6 +2,12 @@ import csv
 
 def parse_fastp(fastp_path):
     """
+    Parse a fastp.csv file into a list of dicts.
+
+    :param fastp_path: Path to fastp.csv file
+    :type fastp_path: str
+    :return: List of dicts
+    :rtype: list
     """
     fastp = []
     int_fields = [
@@ -49,8 +55,61 @@ def parse_fastp(fastp_path):
     return fastp
 
 
+def parse_nanoq(nanoq_path):
+    """
+    """
+    nanoq = []
+    int_fields = [
+        'total_reads_before_filtering',
+        'total_reads_after_filtering',
+        'total_bases_before_filtering',
+        'total_bases_after_filtering',
+        'mean_read_length_before_filtering',
+        'mean_read_length_after_filtering',
+        'median_read_length_before_filtering',
+        'median_read_length_after_filtering',
+        'shortest_read_length_before_filtering',
+        'shortest_read_length_after_filtering',
+        'longest_read_length_before_filtering',
+        'longest_read_length_after_filtering',
+        'read_n50_before_filtering',
+        'read_n50_after_filtering',   
+    ]
+
+    float_fields = [
+        'mean_base_quality_before_filtering',
+        'mean_base_quality_after_filtering',
+        'median_base_quality_before_filtering',
+        'median_base_quality_after_filtering',
+    ]
+
+    with open(nanoq_path, 'r') as f:
+        reader = csv.DictReader(f, dialect='unix')
+        for row in reader:
+            for field in int_fields:
+                try:
+                    row[field] = int(row[field])
+                except ValueError as e:
+                    row[field] = None
+            for field in float_fields:
+                try:
+                    row[field] = float(row[field])
+                except ValueError as e:
+                    row[field] = None
+
+            nanoq.append(row)
+
+    return nanoq
+
+
 def parse_quast(quast_path):
     """
+    Parse a quast.csv file into a list of dicts.
+
+    :param quast_path: Path to quast.csv file
+    :type quast_path: str
+    :return: List of dicts
+    :rtype: list
     """
     quast = []
 
