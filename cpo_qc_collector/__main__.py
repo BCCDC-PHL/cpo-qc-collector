@@ -68,7 +68,6 @@ def main():
                         logging.info(json.dumps({"event_type": "config_loaded", "config_file": os.path.abspath(args.config)}))
                     except json.decoder.JSONDecodeError as e:
                         logging.error(json.dumps({"event_type": "load_config_failed", "config_file": os.path.abspath(args.config)}))
-                    # if run['analysis_type'] == 'hybrid':
                     core.collect_outputs(config, run)
                 if quit_when_safe:
                     exit(0)

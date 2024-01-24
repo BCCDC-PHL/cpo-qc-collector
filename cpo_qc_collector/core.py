@@ -176,7 +176,7 @@ def find_runs(config):
     runs = []
     all_analysis_dirs = sorted(list(os.listdir(config['analysis_by_run_dir'])))
     illumina_run_ids = filter(lambda x: re.match('\d{6}_[VM]', x) != None, all_analysis_dirs)
-    nanopore_run_ids = filter(lambda x: re.match('\d{8}_\d{4}_X\d', x) != None, all_analysis_dirs)
+    nanopore_run_ids = filter(lambda x: re.match('\d{8}_\d{4}_X\d{1}_', x) != None, all_analysis_dirs)
     all_run_ids = sorted(list(illumina_run_ids) + list(nanopore_run_ids))
     for run_id in all_run_ids:
         if run_id in config['excluded_runs']:
@@ -187,7 +187,7 @@ def find_runs(config):
             sequencer_type = 'miseq'
         elif re.match('\d{6}_VH\d{5}_', run_id):
             sequencer_type = 'nextseq'
-        elif re.match('\d{8}_\d{4}_X\d', run_id):
+        elif re.match('\d{8}_\d{4}_X\d{1}_', run_id):
             sequencer_type = 'nanopore'
 
         analysis_dir = os.path.join(config['analysis_by_run_dir'], run_id)
@@ -302,7 +302,12 @@ def collect_outputs(config: dict[str, object], analysis_dir: Optional[dict[str, 
     library_qc_dst_file = os.path.join(config['output_dir'], "library-qc", run_id + "_" + analysis_type + "_library_qc.json")
     if not os.path.exists(library_qc_dst_file):
         latest_assembly_output_path = find_latest_assembly_output(analysis_dir['path'], analysis_type)
-        fastp_glob = os.path.join(latest_assembly_output_path, '*', '*_fastp.csv')
+        if latest_assembly_output_path is not None:
+            fastp_glob = os.path.join(latest_assembly_output_path, '*', '*_fastp.csv')
+        else:
+            logging.error(json.dumps({"event_type": "latest_assembly_output_not_found", "sequencing_run_id": run_id, "analysis_dir_path": os.path.join(analysis_dir['path'], analysis_type)}))
+            # if we can't find an assembly dir, bail out early.
+            return None
         fastp_paths = glob.glob(fastp_glob)
         for fastp_path in fastp_paths:
             if os.path.exists(fastp_path):
@@ -316,6 +321,7 @@ def collect_outputs(config: dict[str, object], analysis_dir: Optional[dict[str, 
                         }
                     library_qc_by_library_id[library_id]['num_bases_short'] = fastp_record['total_bases_before_filtering']
 
+        
         nanoq_glob = os.path.join(latest_assembly_output_path, '*', '*_nanoq.csv')
         nanoq_paths = glob.glob(nanoq_glob)
         for nanoq_path in nanoq_paths:
@@ -345,7 +351,11 @@ def collect_outputs(config: dict[str, object], analysis_dir: Optional[dict[str, 
                             library_qc_by_library_id[library_id]['assembly_N50'] = quast_record['assembly_N50']
 
         latest_mlst_output_path = find_latest_mlst_output(analysis_dir['path'])
-        mlst_sequence_type_glob = os.path.join(latest_mlst_output_path, '*', '*_sequence_type.csv')
+        if latest_mlst_output_path is not None:
+            mlst_sequence_type_glob = os.path.join(latest_mlst_output_path, '*', '*_sequence_type.csv')
+        else:
+            logging.error(json.dumps({"event_type": "latest_mlst_output_not_found", "sequencing_run_id": run_id, "analysis_dir_path": os.path.join(analysis_dir['path'], analysis_type)}))
+            mlst_sequence_type_glob = ''
         mlst_sequence_type_paths = glob.glob(mlst_sequence_type_glob)
         for mlst_sequence_type_path in mlst_sequence_type_paths:
             if os.path.exists(mlst_sequence_type_path):
